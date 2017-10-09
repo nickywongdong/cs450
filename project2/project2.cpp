@@ -344,7 +344,7 @@ Display( )
 	}
 	else 				//looking from inside
 	{
-		gluLookAt(0., 0., 0.,		0., 0., 0.,		0., 0., 0.);
+		gluLookAt(0. ,0., 0.,     -0.4, 1.8, -4.9,     0., 1., 0.);
         // do not do the Xrot, Yrot, and Scale transformations
 	}
 
@@ -394,13 +394,15 @@ Display( )
 
 
 	glPushMatrix();
+	glTranslatef(0., 2.9, -2.);
 	glRotatef(BladeAngle, 0., 0.33, 0.);	//spin dem blades
 	glCallList( BladeList1 );
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(.2, 3.1, 9.3);
-	glRotatef(BladeAngle, 0., 0.33, 0.);	//spin dem blades
+	//glTranslatef(.2, 3.1, 9.3);
+	glTranslatef(.5, 2.5, 9.);
+	glRotatef(3*BladeAngle, 0., 0.33, 0.);	//spin dem blades
 	glCallList( BladeList2 );
 	glPopMatrix();
 
@@ -871,8 +873,8 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 
 		// blade parameters:
 
-		#define BLADE_RADIUS	4.0
-		#define BLADE_WIDTH		0.5
+		#define TOP_BLADE_RADIUS	5
+		#define TOP_BLADE_WIDTH		0.5
 
 		// draw the helicopter blade with radius BLADE_RADIUS and
 		//	width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
@@ -882,23 +884,27 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 
 		glPushMatrix();
 		glColor3f(0.502, 0.502, 0.);
-		glTranslatef(0, 2.6, 0);
+		//glTranslatef(0, 2.6, 0);
 		glRotatef(90, 1, 0, 0);
 		//glRotatef(BladeAngle, 0., 0., 1.);	//spin dem blades
 		//printf("spinning dem blades\n");
 
 		glBegin( GL_TRIANGLES );
-		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  TOP_BLADE_RADIUS,  TOP_BLADE_WIDTH/2. );
 		glVertex2f(  0., 0. );
-		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  TOP_BLADE_RADIUS, -TOP_BLADE_WIDTH/2. );
 
-		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f( -TOP_BLADE_RADIUS, -TOP_BLADE_WIDTH/2. );
 		glVertex2f(  0., 0. );
-		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f( -TOP_BLADE_RADIUS,  TOP_BLADE_WIDTH/2. );
 		glEnd( );
 		glPopMatrix();
 
 		glEndList();
+
+
+		#define REAR_BLADE_RADIUS	1.5
+		#define REAR_BLADE_WIDTH	0.5
 
 		// Second helicopter blade
 
@@ -910,13 +916,13 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		//glRotatef(BladeAngle, 0., 0., 1.);		//spin dem blades
 
 		glBegin( GL_TRIANGLES );
-		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  REAR_BLADE_RADIUS,  REAR_BLADE_WIDTH/2. );
 		glVertex2f(  0., 0. );
-		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  REAR_BLADE_RADIUS, -REAR_BLADE_WIDTH/2. );
 
-		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f( -REAR_BLADE_RADIUS, -REAR_BLADE_WIDTH/2. );
 		glVertex2f(  0., 0. );
-		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f( -REAR_BLADE_RADIUS,  REAR_BLADE_WIDTH/2. );
 		glEnd( );
 		glPopMatrix();
 		glEndList();
