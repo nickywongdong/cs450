@@ -806,14 +806,18 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glNewList( HeliList, GL_COMPILE );
 
 		glPushMatrix();
-		glTranslatef(0, 1, 0);
+		glTranslatef(0, 0, -20);
 
-		glBegin(GL_POLYGON);
+		//glBegin(GL_POLYGON);
 		// Drawing something along -Z
-		glColor3f(1.,0.843,0.);  //make it look like a sun
+		//try a teapot:
+		/*glColor3f(1.,0.843,0.);  //make it look like a sun
 		for(double i = 0; i < 2 * M_PI * 500; i += M_PI / 12){
 			glVertex3f(cos(i), sin(i), -15.);
-		}
+		}*/
+
+		glColor3f(0.8, 0.2, 0.1);
+		glutWireTeapot(8);
 		glEnd();
 		glPopMatrix();
 
