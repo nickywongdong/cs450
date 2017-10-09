@@ -16,6 +16,10 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
+//Variable to increment in Animate()
+float Time;
+#define MS_IN_THE_ANIMATION_CYCLE	10000
+int BladeAngle = 10;
 
 // title of these windows:
 
@@ -155,6 +159,8 @@ int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
 int		DepthFightingOn;		// != 0 means to use the z-buffer
 GLuint	HeliList;				// object display list
+GLuint 	BladeList1;
+GLuint 	BladeList2;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -250,15 +256,14 @@ main( int argc, char *argv[ ] )
 void
 Animate( )
 {
+
 	// put animation stuff in here -- change some global variables
 	// for Display( ) to find:
-	float Time;
-	#define MS_IN_THE_ANIMATION_CYCLE	10000
-	//. . .
 	int ms = glutGet( GLUT_ELAPSED_TIME );	// milliseconds
 	ms  %=  MS_IN_THE_ANIMATION_CYCLE;
 	Time = (float)ms  /  (float)MS_IN_THE_ANIMATION_CYCLE;        // [ 0., 1. )
 
+	BladeAngle+=10;		//rotate dem blades
 	// force a call to Display( ) next time it is convenient:
 
 glutSetWindow( MainWindow );
@@ -379,6 +384,19 @@ Display( )
 	// draw the current object:
 
 	glCallList( HeliList );
+
+
+	glPushMatrix();
+	glRotatef(BladeAngle, 0., 0.33, 0.);	//spin dem blades
+	glCallList( BladeList1 );
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(.2, 3.1, 9.3);
+	glRotatef(BladeAngle, 0., 0.33, 0.);	//spin dem blades
+	glCallList( BladeList2 );
+	glPopMatrix();
+
 
 	if( DepthFightingOn != 0 )
 	{
@@ -697,7 +715,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glutTabletButtonFunc( NULL );
 		glutMenuStateFunc( NULL );
 		glutTimerFunc( -1, NULL, 0 );
-		glutIdleFunc( NULL );
+		glutIdleFunc( Animate );			//designated Animate() as idle function
 
 	// init glew (a window must be open to do this):
 
@@ -778,48 +796,8 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glEnd();
 		glPopMatrix();
 
-		// blade parameters:
 
-		#define BLADE_RADIUS	4.0
-		#define BLADE_WIDTH		0.5
-
-		// draw the helicopter blade with radius BLADE_RADIUS and
-		//	width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
-
-		glPushMatrix();
-		glColor3f(0.502, 0.502, 0.);
-		glTranslatef(0, 2.6, 0);
-		glRotatef(90, 1, 0, 0);
-
-		glBegin( GL_TRIANGLES );
-		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
-		glVertex2f(  0., 0. );
-		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
-
-		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
-		glVertex2f(  0., 0. );
-		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
-		glEnd( );
-		glPopMatrix();
-
-		// Second helicopter blade
-
-		glPushMatrix();
-		glTranslatef(.2, 3.1, 9.3);
-		glRotatef(90, 1, 0, 0);
-
-		glBegin( GL_TRIANGLES );
-		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
-		glVertex2f(  0., 0. );
-		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
-
-		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
-		glVertex2f(  0., 0. );
-		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
-		glEnd( );
-		glPopMatrix();
-
-
+		//	Helicopter
 
 		int i;
 		struct point *p0, *p1, *p2;
@@ -851,7 +829,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 			n[1] += .25;
 			if( n[1] > 1. )
 				n[1] = 1.;
-			glColor3f( 0., n[1], 0. );
+			glColor3f( 0.184*n[1], 0.310*n[1], 0.310*n[1] );
 
 			glVertex3f( p0->x, p0->y, p0->z );
 			glVertex3f( p1->x, p1->y, p1->z );
@@ -861,7 +839,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glPopMatrix( );
 
 
-	// create the axes:
+		// create the axes:
 
 		glColor3f(1., 0., 0.);
 		AxesList = glGenLists( 1 );
@@ -870,6 +848,60 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		Axes( 1.5 );
 		glLineWidth( 1. );
 		glEndList( );
+
+
+		// blade parameters:
+
+		#define BLADE_RADIUS	4.0
+		#define BLADE_WIDTH		0.5
+
+		// draw the helicopter blade with radius BLADE_RADIUS and
+		//	width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
+
+		BladeList1 = glGenLists( 1 );
+		glNewList( BladeList1, GL_COMPILE );
+
+		glPushMatrix();
+		glColor3f(0.502, 0.502, 0.);
+		glTranslatef(0, 2.6, 0);
+		glRotatef(90, 1, 0, 0);
+		//glRotatef(BladeAngle, 0., 0., 1.);	//spin dem blades
+		//printf("spinning dem blades\n");
+
+		glBegin( GL_TRIANGLES );
+		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+
+		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glEnd( );
+		glPopMatrix();
+
+		glEndList();
+
+		// Second helicopter blade
+
+		BladeList2 = glGenLists( 1 );
+		glNewList( BladeList2, GL_COMPILE );
+		glPushMatrix();
+		//glTranslatef(.2, 3.1, 9.3);
+		glRotatef(90, 1, 0, 0);
+		//glRotatef(BladeAngle, 0., 0., 1.);		//spin dem blades
+
+		glBegin( GL_TRIANGLES );
+		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+
+		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glEnd( );
+		glPopMatrix();
+		glEndList();
+
 	}
 
 
