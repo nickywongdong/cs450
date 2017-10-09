@@ -252,11 +252,17 @@ Animate( )
 {
 	// put animation stuff in here -- change some global variables
 	// for Display( ) to find:
+	float Time;
+	#define MS_IN_THE_ANIMATION_CYCLE	10000
+	//. . .
+	int ms = glutGet( GLUT_ELAPSED_TIME );	// milliseconds
+	ms  %=  MS_IN_THE_ANIMATION_CYCLE;
+	Time = (float)ms  /  (float)MS_IN_THE_ANIMATION_CYCLE;        // [ 0., 1. )
 
 	// force a call to Display( ) next time it is convenient:
 
-	glutSetWindow( MainWindow );
-	glutPostRedisplay( );
+glutSetWindow( MainWindow );
+glutPostRedisplay( );
 }
 
 
@@ -323,7 +329,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( 0., 0., 3.,     0., 0., 0.,     0., 1., 0. );
+	gluLookAt( 10., 5., 10.,     0., 0., 0.,     0., 1., 0. );
 
 
 	// rotate the scene:
@@ -757,8 +763,64 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 	{
 	// create the object
 
-	HeliList = glGenLists( 1 );
-	glNewList( HeliList, GL_COMPILE );
+		HeliList = glGenLists( 1 );
+		glNewList( HeliList, GL_COMPILE );
+
+		glPushMatrix();
+		glTranslatef(0, 1, 0);
+
+		glBegin(GL_POLYGON);
+		// Drawing something along -Z
+		glColor3f(1.,0.843,0.);  //make it look like a sun
+		for(double i = 0; i < 2 * M_PI * 500; i += M_PI / 12){
+			glVertex3f(cos(i), sin(i), -15.);
+		}
+		glEnd();
+		glPopMatrix();
+
+		// blade parameters:
+
+		#define BLADE_RADIUS	4.0
+		#define BLADE_WIDTH		0.5
+
+		// draw the helicopter blade with radius BLADE_RADIUS and
+		//	width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
+
+		glPushMatrix();
+		glColor3f(0.502, 0.502, 0.);
+		glTranslatef(0, 2.6, 0);
+		glRotatef(90, 1, 0, 0);
+
+		glBegin( GL_TRIANGLES );
+		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+
+		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glEnd( );
+		glPopMatrix();
+
+		// Second helicopter blade
+
+		glPushMatrix();
+		glTranslatef(.2, 3.1, 9.3);
+		glRotatef(90, 1, 0, 0);
+
+		glBegin( GL_TRIANGLES );
+		glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+
+		glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+		glVertex2f(  0., 0. );
+		glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
+		glEnd( );
+		glPopMatrix();
+
+
+
 		int i;
 		struct point *p0, *p1, *p2;
 		struct tri *tp;
@@ -801,6 +863,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 
 	// create the axes:
 
+		glColor3f(1., 0., 0.);
 		AxesList = glGenLists( 1 );
 		glNewList( AxesList, GL_COMPILE );
 		glLineWidth( AXES_WIDTH );
