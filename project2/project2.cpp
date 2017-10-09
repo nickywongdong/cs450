@@ -158,6 +158,7 @@ int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
 int		DepthFightingOn;		// != 0 means to use the z-buffer
+int 	ViewMode;				
 GLuint	HeliList;				// object display list
 GLuint 	BladeList1;
 GLuint 	BladeList2;
@@ -182,6 +183,7 @@ void	DoDepthBufferMenu( int );
 void	DoDepthFightingMenu( int );
 void	DoDepthMenu( int );
 void	DoDebugMenu( int );
+void 	DoViewMenu( int );
 void	DoMainMenu( int );
 void	DoProjectMenu( int );
 void	DoRasterString( float, float, float, char * );
@@ -281,7 +283,6 @@ Display( )
 		fprintf( stderr, "Display\n" );
 	}
 
-
 	// set which window we want to do the graphics into:
 
 	glutSetWindow( MainWindow );
@@ -334,13 +335,19 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( 10., 5., 10.,     0., 0., 0.,     0., 1., 0. );
+	if( ViewMode == 1 )	//looking from outside
+	{
+		gluLookAt( 10., 5., 10.,     0., 0., 0.,     0., 1., 0. );
+		// do the Xrot, Yrot, and Scale transformations >>
+		glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+		glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+	}
+	else 				//looking from inside
+	{
+		gluLookAt(0., 0., 0.,		0., 0., 0.,		0., 0., 0.);
+        // do not do the Xrot, Yrot, and Scale transformations
+	}
 
-
-	// rotate the scene:
-
-	glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-	glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
 
 	// uniformly scale the scene:
@@ -505,6 +512,13 @@ DoDepthMenu( int id )
 	glutPostRedisplay( );
 }
 
+void DoViewMenu( int id ){
+	ViewMode = id;
+
+	glutSetWindow( MainWindow );
+	glutPostRedisplay();
+}
+
 
 // main menu callback:
 
@@ -632,6 +646,10 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glutAddMenuEntry( "Orthographic",  ORTHO );
 		glutAddMenuEntry( "Perspective",   PERSP );
 
+		int viewmenu = glutCreateMenu( DoViewMenu );
+		glutAddMenuEntry("OUTSIDE", 1);
+		glutAddMenuEntry("INSIDE", 0);
+
 		int mainmenu = glutCreateMenu( DoMainMenu );
 		glutAddSubMenu(   "Axes",          axesmenu);
 		glutAddSubMenu(   "Colors",        colormenu);
@@ -639,6 +657,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 		glutAddSubMenu(   "Depth Fighting",depthfightingmenu);
 		glutAddSubMenu(   "Depth Cue",     depthcuemenu);
 		glutAddSubMenu(   "Projection",    projmenu );
+		glutAddSubMenu(   "View Mode",     viewmenu );
 		glutAddMenuEntry( "Reset",         RESET );
 		glutAddSubMenu(   "Debug",         debugmenu);
 		glutAddMenuEntry( "Quit",          QUIT );
@@ -1035,6 +1054,7 @@ Reset( )
 	ActiveButton = 0;
 	AxesOn = 1;
 	DebugOn = 0;
+	ViewMode = 1;
 	DepthBufferOn = 1;
 	DepthFightingOn = 0;
 	DepthCueOn = 0;
