@@ -16,8 +16,6 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
-#include "heli.550"
-
 
 // title of these windows:
 
@@ -156,7 +154,7 @@ int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
 int		DepthFightingOn;		// != 0 means to use the z-buffer
-GLuint	BoxList;				// object display list
+GLuint	HeliList;				// object display list
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -164,6 +162,9 @@ int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
+
+
+#include "heli.550"
 
 // function prototypes:
 
@@ -371,13 +372,13 @@ Display( )
 
 	// draw the current object:
 
-	glCallList( BoxList );
+	glCallList( HeliList );
 
 	if( DepthFightingOn != 0 )
 	{
 		glPushMatrix( );
 		glRotatef( 90.,   0., 1., 0. );
-		glCallList( BoxList );
+		glCallList( HeliList );
 		glPopMatrix( );
 	}
 
@@ -755,6 +756,9 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 	InitLists( )
 	{
 	// create the object
+
+	HeliList = glGenLists( 1 );
+	glNewList( HeliList, GL_COMPILE );
 		int i;
 		struct point *p0, *p1, *p2;
 		struct tri *tp;
