@@ -816,7 +816,7 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 			glVertex3f(cos(i), sin(i), -15.);
 		}*/
 
-		glColor3f(0.8, 0.2, 0.1);
+		glColor3f(1., 0.894, 0.882);
 		glutWireTeapot(8);
 		glEnd();
 		glPopMatrix();
