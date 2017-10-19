@@ -16,13 +16,17 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
-#include "bmptotexture.cpp"
-#include "sphere.cpp"
-
 //Sphere dimensions:
 #define SPHERE_RADIUS	1
 #define SPHERE_SLICES	300
 #define SPHERE_STACKS	300
+
+//Animation Cycle ms:
+float Time;
+#define MS_PER_CYCLE	500
+
+#include "bmptotexture.cpp"
+#include "sphere.cpp"
 
 
 // title of these windows:
@@ -160,6 +164,7 @@ GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
+int 	TextureMode;
 //GLuint	BoxList;				// object display list
 GLuint 	SphereList;
 int		MainWindow;				// window id for main graphics window
@@ -178,6 +183,7 @@ void	DoAxesMenu( int );
 void	DoColorMenu( int );
 void	DoDepthMenu( int );
 void	DoDebugMenu( int );
+void	DoTextureMenu( int );
 void	DoMainMenu( int );
 void	DoProjectMenu( int );
 void	DoRasterString( float, float, float, char * );
@@ -254,6 +260,9 @@ Animate( )
 {
 	// put animation stuff in here -- change some global variables
 	// for Display( ) to find:
+	int ms = glutGet( GLUT_ELAPSED_TIME );
+	ms %= MS_PER_CYCLE;
+	Time = (float)ms / (float)MS_PER_CYCLE;		// [0.,1.)
 
 	// force a call to Display( ) next time it is convenient:
 
@@ -362,6 +371,24 @@ Display( )
 		glCallList( AxesList );
 	}
 
+	// Texture menu options:
+
+	//no texture
+	if( TextureMode == 0 ){
+		glDisable( GL_TEXTURE_2D );
+	}
+	//with texture
+	else if( TextureMode == 1 ) {
+		glEnable( GL_TEXTURE_2D );
+	}
+	//with texture distortion
+	else if( TextureMode == 2 ){
+		Distort = true;
+	}
+	else if( TextureMode == 3 ){
+		Distort = false;
+	}
+
 
 	// since we are using glScalef( ), be sure normals get unitized:
 
@@ -370,8 +397,14 @@ Display( )
 
 	// draw the current object:
 
+	glPushMatrix();
+	if(Distort == true){
+		MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
+		//glRotatef(360.*sin(M_PI * Time), cos(Time*M_PI), sin(Time), cos(M_PI*Time) );
+	}
 	glCallList( SphereList );
 
+	glPopMatrix();
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
@@ -451,6 +484,14 @@ DoDepthMenu( int id )
 	glutPostRedisplay( );
 }
 
+void
+DoTextureMenu( int id ){
+	TextureMode = id;
+
+	glutSetWindow( MainWindow );
+	glutPostRedisplay( );
+
+}
 
 // main menu callback:
 
@@ -566,6 +607,12 @@ InitMenus( )
 	glutAddMenuEntry( "Off",  0 );
 	glutAddMenuEntry( "On",   1 );
 
+	int texturemenu = glutCreateMenu( DoTextureMenu );
+	glutAddMenuEntry( "No Texture", 0 );
+	glutAddMenuEntry( "Texture", 1 );
+	glutAddMenuEntry( "Distortion_ON", 2 );
+	glutAddMenuEntry( "Distortion_OFF", 3 );
+
 	int projmenu = glutCreateMenu( DoProjectMenu );
 	glutAddMenuEntry( "Orthographic",  ORTHO );
 	glutAddMenuEntry( "Perspective",   PERSP );
@@ -575,6 +622,7 @@ InitMenus( )
 	glutAddSubMenu(   "Colors",        colormenu);
 	glutAddSubMenu(   "Depth Cue",     depthcuemenu);
 	glutAddSubMenu(   "Projection",    projmenu );
+	glutAddSubMenu(	  "Texture Options",	texturemenu );
 	glutAddMenuEntry( "Reset",         RESET );
 	glutAddSubMenu(   "Debug",         debugmenu);
 	glutAddMenuEntry( "Quit",          QUIT );
@@ -651,7 +699,7 @@ InitGraphics( )
 	glutTabletButtonFunc( NULL );
 	glutMenuStateFunc( NULL );
 	glutTimerFunc( -1, NULL, 0 );
-	glutIdleFunc( NULL );
+	glutIdleFunc( Animate );
 
 	// init glew (a window must be open to do this):
 
@@ -686,13 +734,13 @@ InitLists( )
 	//Draw Sphere
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
-	glColor3f(1.000, 0.843, 0.000);
+	glColor3f(0.902, 0.902, 0.980);
 
 	//Read in Texture
 	unsigned char *tex = BmpToTexture("worldtex.bmp", &texWidth, &texHeight);
 
 	//begin wrapping
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 
 	//defining texture wrapping parameters:
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
@@ -703,15 +751,17 @@ InitLists( )
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
 	//texture environment
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	//downloading texture and making it current texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, level, ncomps, texWidth, texHeight, border, GL_RGB, GL_UNSIGNED_BYTE, tex);
 	glTranslatef(0., 0., 0.);
+
 	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
 	glEndList();
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
+
 
 	// create the axes:
 	glColor3f(0.902, 0.902, 0.980);
@@ -855,6 +905,7 @@ Reset( )
 	DebugOn = 0;
 	DepthCueOn = 0;
 	Scale  = 1.0;
+	TextureMode = 1;
 	WhichColor = WHITE;
 	WhichProjection = PERSP;
 	Xrot = Yrot = 0.;
