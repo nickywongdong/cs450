@@ -24,10 +24,11 @@
 #define SPHERE_SLICES	300
 #define SPHERE_STACKS	300
 
+
 // title of these windows:
 
-const char *WINDOWTITLE = { "OpenGL / GLUT Sample -- Joe Graphics" };
-const char *GLUITITLE   = { "User Interface Window" };
+const char *WINDOWTITLE = { "OpenGL / Project 3 -- Nick Wong" };
+const char *GLUITITLE   = { "Texture Mapping" };
 
 
 // what the glui package defines as true and false:
@@ -396,7 +397,7 @@ Display( )
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity( );
 	glColor3f( 1., 1., 1. );
-	//DoRasterString( 5., 5., 0., "Text That Doesn't" );
+	DoRasterString( 5., 5., 0., "Project 3: Texture Mapping" );
 
 
 	// swap the double-buffered framebuffers:
@@ -675,12 +676,42 @@ InitGraphics( )
 
 void
 InitLists( )
-{
+{	
+	int texWidth, texHeight;
+	int level, ncomps, border;
+	level = 0;	//mip-mapping
+	ncomps = 3;	//number of components in texture: RGB
+	border = 0;	//width of texture border, in pixels
+
+	//Draw Sphere
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
 	glColor3f(1.000, 0.843, 0.000);
-	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
 
+	//Read in Texture
+	unsigned char *tex = BmpToTexture("worldtex.bmp", &texWidth, &texHeight);
+
+	//begin wrapping
+	glEnable(GL_TEXTURE_2D);
+
+	//defining texture wrapping parameters:
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	//defining texture filter parameters
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+	//texture environment
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	//downloading texture and making it current texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, level, ncomps, texWidth, texHeight, border, GL_RGB, GL_UNSIGNED_BYTE, tex);
+	glTranslatef(0., 0., 0.);
+	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
+	glEndList();
+	glDisable(GL_TEXTURE_2D);
 
 	// create the axes:
 	glColor3f(0.902, 0.902, 0.980);

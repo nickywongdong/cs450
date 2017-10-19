@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 
 int	ReadInt( FILE * );
 short	ReadShort( FILE * );
@@ -39,7 +39,7 @@ const int birgb = { 0 };
 unsigned char *
 BmpToTexture( char *filename, int *width, int *height )
 {
-
+	
 	int s, t, e;		// counters
 	int numextra;		// # extra bytes each line in the file is padded with
 	FILE *fp;
