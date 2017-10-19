@@ -11,35 +11,18 @@
 #include "glew.h"
 #endif
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include "glut.h"
 
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
 
-//	This is a sample OpenGL / GLUT program
-//
-//	The objective is to draw a 3d object and change the color of the axes
-//		with a glut menu
-//
-//	The left mouse button does rotation
-//	The middle mouse button does scaling
-//	The user interface allows:
-//		1. The axes to be turned on and off
-//		2. The color of the axes to be changed
-//		3. Debugging to be turned on and off
-//		4. Depth cueing to be turned on and off
-//		5. The projection to be changed
-//		6. The transformations to be reset
-//		7. The program to quit
-//
-//	Author:			Joe Graphics
+#include "bmptotexture.cpp"
+#include "sphere.cpp"
 
-// NOTE: There are a lot of good reasons to use const variables instead
-// of #define's.  However, Visual C++ does not allow a const variable
-// to be used as an array size or as the case in a switch( ) statement.  So in
-// the following, all constants are const variables except those which need to
-// be array sizes or cases in switch( ) statements.  Those are #defines.
-
+//Sphere dimensions:
+#define SPHERE_RADIUS	1
+#define SPHERE_SLICES	300
+#define SPHERE_STACKS	300
 
 // title of these windows:
 
@@ -176,7 +159,8 @@ GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
-GLuint	BoxList;				// object display list
+//GLuint	BoxList;				// object display list
+GLuint 	SphereList;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -385,14 +369,14 @@ Display( )
 
 	// draw the current object:
 
-	glCallList( BoxList );
+	glCallList( SphereList );
 
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
 	glDisable( GL_DEPTH_TEST );
 	glColor3f( 0., 1., 1. );
-	DoRasterString( 0., 1., 0., "Text That Moves" );
+	//DoRasterString( 0., 1., 0., "Text That Moves" );
 
 
 	// draw some gratuitous text that is fixed on the screen:
@@ -412,7 +396,7 @@ Display( )
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity( );
 	glColor3f( 1., 1., 1. );
-	DoRasterString( 5., 5., 0., "Text That Doesn't" );
+	//DoRasterString( 5., 5., 0., "Text That Doesn't" );
 
 
 	// swap the double-buffered framebuffers:
@@ -692,68 +676,14 @@ InitGraphics( )
 void
 InitLists( )
 {
-	float dx = BOXSIZE / 2.f;
-	float dy = BOXSIZE / 2.f;
-	float dz = BOXSIZE / 2.f;
-	glutSetWindow( MainWindow );
-
-	// create the object:
-
-	BoxList = glGenLists( 1 );
-	glNewList( BoxList, GL_COMPILE );
-
-		glBegin( GL_QUADS );
-
-			glColor3f( 0., 0., 1. );
-			glNormal3f( 0., 0.,  1. );
-				glVertex3f( -dx, -dy,  dz );
-				glVertex3f(  dx, -dy,  dz );
-				glVertex3f(  dx,  dy,  dz );
-				glVertex3f( -dx,  dy,  dz );
-
-			glNormal3f( 0., 0., -1. );
-				glTexCoord2f( 0., 0. );
-				glVertex3f( -dx, -dy, -dz );
-				glTexCoord2f( 0., 1. );
-				glVertex3f( -dx,  dy, -dz );
-				glTexCoord2f( 1., 1. );
-				glVertex3f(  dx,  dy, -dz );
-				glTexCoord2f( 1., 0. );
-				glVertex3f(  dx, -dy, -dz );
-
-			glColor3f( 1., 0., 0. );
-			glNormal3f(  1., 0., 0. );
-				glVertex3f(  dx, -dy,  dz );
-				glVertex3f(  dx, -dy, -dz );
-				glVertex3f(  dx,  dy, -dz );
-				glVertex3f(  dx,  dy,  dz );
-
-			glNormal3f( -1., 0., 0. );
-				glVertex3f( -dx, -dy,  dz );
-				glVertex3f( -dx,  dy,  dz );
-				glVertex3f( -dx,  dy, -dz );
-				glVertex3f( -dx, -dy, -dz );
-
-			glColor3f( 0., 1., 0. );
-			glNormal3f( 0.,  1., 0. );
-				glVertex3f( -dx,  dy,  dz );
-				glVertex3f(  dx,  dy,  dz );
-				glVertex3f(  dx,  dy, -dz );
-				glVertex3f( -dx,  dy, -dz );
-
-			glNormal3f( 0., -1., 0. );
-				glVertex3f( -dx, -dy,  dz );
-				glVertex3f( -dx, -dy, -dz );
-				glVertex3f(  dx, -dy, -dz );
-				glVertex3f(  dx, -dy,  dz );
-
-		glEnd( );
-
-	glEndList( );
+	SphereList = glGenLists( 1 );
+	glNewList( SphereList, GL_COMPILE );
+	glColor3f(1.000, 0.843, 0.000);
+	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
 
 
 	// create the axes:
-
+	glColor3f(0.902, 0.902, 0.980);
 	AxesList = glGenLists( 1 );
 	glNewList( AxesList, GL_COMPILE );
 		glLineWidth( AXES_WIDTH );
