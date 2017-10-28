@@ -151,7 +151,8 @@ GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
-GLuint	BoxList;				// object display list
+//GLuint	BoxList;				// object display list
+GLuint 	TorusList;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -359,15 +360,14 @@ Display( )
 
 
 	// draw the current object:
-
-	glCallList( BoxList );
+	glCallList( TorusList );
 
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
 	glDisable( GL_DEPTH_TEST );
 	glColor3f( 0., 1., 1. );
-	DoRasterString( 0., 1., 0., "Text That Moves" );
+	//DoRasterString( 0., 1., 0., "Text That Moves" );
 
 
 	// draw some gratuitous text that is fixed on the screen:
@@ -387,7 +387,7 @@ Display( )
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity( );
 	glColor3f( 1., 1., 1. );
-	DoRasterString( 5., 5., 0., "Text That Doesn't" );
+	DoRasterString( 5., 5., 0., "Lighting" );
 
 
 	// swap the double-buffered framebuffers:
@@ -667,19 +667,20 @@ InitGraphics( )
 void
 InitLists( )
 {
-	float dx = BOXSIZE / 2.f;
-	float dy = BOXSIZE / 2.f;
-	float dz = BOXSIZE / 2.f;
-	glutSetWindow( MainWindow );
 
 	// create the object:
 
-	BoxList = glGenLists( 1 );
-	glNewList( BoxList, GL_COMPILE );
+	TorusList = glGenLists( 1 );
+	glNewList( TorusList, GL_COMPILE );
 
-		glBegin( GL_QUADS );
-		glEnd( );
+	//set up surface normal
 
+	glTranslatef( 0., 0., 5. );
+	//glScalef( 1., 1., 1. );
+	
+	//glNormal3f( nx, ny, nz );
+	glColor3f( 0.282, 0.239, 0.545 );
+	glutSolidTorus(1., 2.5, 100, 100);
 	glEndList( );
 
 
