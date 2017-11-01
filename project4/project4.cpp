@@ -458,7 +458,7 @@ Display( )
 	glPushMatrix();
 	glMatrixMode( GL_MODELVIEW );
 	glShadeModel( GL_FLAT );
-	SetMaterial( 1., 1., 1., 0. );
+	SetMaterial( 1., 1., 1., 20. );
 	glColor3f( 0.502, 0.000, 0.000 );
 	glTranslatef( 0., 0., 5. );
 	glScalef( 1., 1., 1. );
@@ -505,7 +505,7 @@ Display( )
 	//Draw our second object (Sphere with texture):
 	glPushMatrix();
 	glColor3f(1., 1., 1.);
-	SetMaterial( 1., 1., 1., 10. );
+	SetMaterial( 1., 1., 1., 1. );
 	glTranslatef(5., 0., 0.);
 	glEnable( GL_TEXTURE_2D );
 	glCallList( SphereList2 );
@@ -839,7 +839,6 @@ InitLists( )
 	//Draw Sphere (spotlight sphere)
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
-	//glColor3f(0.902, 0.902, 0.980);
 	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
 	glEndList();
 
