@@ -173,6 +173,10 @@ int		WhichColor;				// index into Colors[ ]
 int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
+bool 	Freeze = false;			// freeze on keyboard press
+bool 	Light0On = true;		// keyboard light on bools
+bool 	Light1On = true;
+bool 	Light2On = true;
 
 
 // function prototypes:
@@ -507,6 +511,19 @@ Display( )
 	glCallList( SphereList2 );
 	glPopMatrix();
 
+	if( Light0On )
+		glEnable( GL_LIGHT0 );
+	else
+		glDisable( GL_LIGHT0 );
+
+	if( Light1On )
+		glEnable( GL_LIGHT1 );
+	else
+		glDisable( GL_LIGHT1 );
+	if( Light2On )
+		glEnable( GL_LIGHT2 );
+	else
+		glDisable( GL_LIGHT2 );
 
 
 	// draw some gratuitous text that just rotates on top of the scene:
@@ -893,6 +910,27 @@ Keyboard( unsigned char c, int x, int y )
 
 	switch( c )
 	{
+
+		case '0':
+			Light0On = ! Light0On;
+			break;
+
+		case '1':
+			Light1On = ! Light1On;
+			break;
+		case '2':
+			Light2On = ! Light2On;
+			break;
+		
+		case 'f':
+		case 'F':
+		Freeze = ! Freeze;
+		if( Freeze )
+			glutIdleFunc( NULL );
+		else
+			glutIdleFunc( Animate );
+		break;
+
 		case 'o':
 		case 'O':
 			WhichProjection = ORTHO;
