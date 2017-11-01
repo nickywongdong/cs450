@@ -15,6 +15,18 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
+//Sphere dimensions:
+#define SPHERE_RADIUS	0.5
+#define SPHERE_SLICES	300
+#define SPHERE_STACKS	300
+
+//Animation Cycle ms:
+float Time;
+#define MS_PER_CYCLE	500
+
+#include "sphere.cpp"
+#include "bmptotexture.cpp"
+
 
 // title of these windows:
 
@@ -153,6 +165,8 @@ int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 //GLuint	BoxList;				// object display list
 GLuint 	TorusList;
+GLuint 	SphereList;
+GLuint 	SphereList2;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -317,6 +331,9 @@ Animate( )
 {
 	// put animation stuff in here -- change some global variables
 	// for Display( ) to find:
+	int ms = glutGet( GLUT_ELAPSED_TIME );
+	ms %= MS_PER_CYCLE;
+	Time = (float)ms / (float)MS_PER_CYCLE;		// [0.,1.)
 
 	// force a call to Display( ) next time it is convenient:
 
@@ -431,14 +448,65 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
-	//set lighting for torus
-	SetMaterial( 1., 1., 1., 8. );
-	SetPointLight( GL_LIGHT0, 0., 0., 0., 1., 1., 1. );
+	glEnable( GL_LIGHTING );
+
+	// draw a torus:
+	glPushMatrix();
+	glMatrixMode( GL_MODELVIEW );
+	glShadeModel( GL_FLAT );
+	SetMaterial( 1., 1., 1., 0. );
+	glColor3f( 0.502, 0.000, 0.000 );
+	glTranslatef( 0., 0., 5. );
+	glScalef( 1., 1., 1. );
+	glCallList( TorusList );
+	glPopMatrix();
+
+	//Draw light 1 (point light)
+	glPushMatrix();
+	SetPointLight( GL_LIGHT0, 0., 10., 10., 1., 1., 1. );
+	glColor3f( 1., 1., 1. );
+	glTranslatef( 0., 10., 10. );
+	glDisable( GL_LIGHTING );
+	glDisable( GL_TEXTURE_2D );
+	glCallList( SphereList );
+	glPopMatrix();
 
 	glEnable( GL_LIGHTING );
-	glEnable( GL_LIGHT0 );
-	// draw the current object:
-	glCallList( TorusList );
+
+	//draw light 2 (spotlight)
+	glPushMatrix();
+	SetSpotLight( GL_LIGHT1, 0., -5., 0., 0., 5., 0., 0.498, 1.000, 0.831 );
+	glColor3f(0.498, 1.000, 0.831);
+	glTranslatef(0., -5., 0.);
+	glDisable( GL_LIGHTING );
+	glDisable( GL_TEXTURE_2D );
+	glCallList( SphereList );
+	glPopMatrix();
+
+	glEnable( GL_LIGHTING );
+
+	//draw light 3 (animated spotlight)
+	glPushMatrix();
+	glTranslatef( 0., 0., 1. * (5 * cos(Time * 5)) );
+	SetPointLight( GL_LIGHT2, 0., 0., 0., 1.000, 0.627, 0.478 );
+	glColor3f(1.000, 0.627, 0.478);
+	//glTranslatef(0., 0., 0.);
+	glDisable( GL_LIGHTING );
+	glDisable( GL_TEXTURE_2D );
+	glCallList( SphereList );
+	glPopMatrix();
+
+
+	glEnable( GL_LIGHTING );
+	//Draw our second object (Sphere with texture):
+	glPushMatrix();
+	glColor3f(1., 1., 1.);
+	SetMaterial( 1., 1., 1., 10. );
+	glTranslatef(5., 0., 0.);
+	glEnable( GL_TEXTURE_2D );
+	glCallList( SphereList2 );
+	glPopMatrix();
+
 
 
 	// draw some gratuitous text that just rotates on top of the scene:
@@ -719,7 +787,7 @@ InitGraphics( )
 	glutTabletButtonFunc( NULL );
 	glutMenuStateFunc( NULL );
 	glutTimerFunc( -1, NULL, 0 );
-	glutIdleFunc( NULL );
+	glutIdleFunc( Animate );
 
 	// init glew (a window must be open to do this):
 
@@ -745,21 +813,59 @@ InitGraphics( )
 void
 InitLists( )
 {
+	int texWidth, texHeight;
+	int level, ncomps, border;
+	level = 0;	//mip-mapping
+	ncomps = 3;	//number of components in texture: RGB
+	border = 0;	//width of texture border, in pixels
 
-	// create the object:
+	//Draw Sphere (spotlight sphere)
+	SphereList = glGenLists( 1 );
+	glNewList( SphereList, GL_COMPILE );
+	//glColor3f(0.902, 0.902, 0.980);
+	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
+	glEndList();
 
-	TorusList = glGenLists( 1 );
-	glNewList( TorusList, GL_COMPILE );
+	//Object Sphere
+	SphereList2 = glGenLists( 1 );
+	glNewList( SphereList2, GL_COMPILE );
+
+	glShadeModel( GL_SMOOTH );
+
+	//Read in Texture
+	unsigned char *tex = BmpToTexture("worldtex.bmp", &texWidth, &texHeight);
+
+	//defining texture wrapping parameters:
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	//defining texture filter parameters
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+	//texture environment
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	//downloading texture and making it current texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, level, ncomps, texWidth, texHeight, border, GL_RGB, GL_UNSIGNED_BYTE, tex);
+	//glTranslatef(0., 0., 0.);
+
+
+	MjbSphere( SPHERE_RADIUS*5, SPHERE_SLICES, SPHERE_STACKS );
+	glEndList();
 
 	//set up surface normal
 
-	glTranslatef( 0., 0., 5. );
-	//glScalef( 1., 1., 1. );
-
-	glShadeModel( GL_SMOOTH );
+	//glShadeModel( GL_SMOOTH );
 	
 	//glNormal3f( nx, ny, nz );
-	glColor3f( 0.282, 0.239, 0.545 );
+	//glColor3f( 0.282, 0.239, 0.545 );
+	//Torus:
+	TorusList = glGenLists( 1 );
+	glNewList( TorusList, GL_COMPILE );
+	glShadeModel( GL_FLAT );
+	//glNormal3f(0., 0., 1.);
 	glutSolidTorus(1., 2.5, 100, 100);
 	glEndList( );
 
