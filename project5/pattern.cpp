@@ -18,7 +18,7 @@
 #include <OpenGL/gl3.h>
 
 //Sphere dimensions:
-#define SPHERE_RADIUS	0.5
+#define SPHERE_RADIUS	1
 #define SPHERE_SLICES	300
 #define SPHERE_STACKS	300
 
@@ -337,7 +337,7 @@ Animate( )
 {
 	// put animation stuff in here -- change some global variables
 	// for Display( ) to find:
-	int ms = glutGet( GLUT_ELAPSED_TIME );
+	int ms = glutGet( GLUT_ELAPSED_TIME ) / 5;	//divide by 5 to make animation slower
 	ms %= MS_PER_CYCLE;
 	Time = (float)ms / (float)MS_PER_CYCLE;		// [0.,1.)
 

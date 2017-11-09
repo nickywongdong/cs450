@@ -12,13 +12,8 @@ void
 main( )
 {
 	vec4 pos = gl_ModelViewMatrix * gl_Vertex;
-	vColor = pos.xyz; // set rgb from xyz!
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-	//vST = gl_MultiTexCoord0.st;
-	//vec3 vert = gl_Vertex.xyz;
-	//vert.x = cos(PI * uTime);
-	//vert.y = cos(PI * uTime);
-	//vert.z = cos(PI * uTime);
-	//gl_Position = gl_ModelViewProjectionMatrix * vec4( vert, 1. );
+	vST = gl_MultiTexCoord0.st;
+	vColor = pos.xyz; // set rgb from xyz!
+	gl_Position = gl_ModelViewProjectionMatrix * vec4( sin(uTime * PI) * (gl_Vertex.x), (gl_Vertex.y), (gl_Vertex.z), 1. );
 }

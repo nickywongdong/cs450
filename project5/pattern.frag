@@ -8,9 +8,6 @@ void
 main( )
 {
 	vec3 myColor = vec3( 1., 0., 0. );
-	//if( ??? )
-	//{
-	//	myColor = vec3( 1., 0., 0. );
-	//}
+	
 	gl_FragColor = vec4( vColor,  1. );
 }
