@@ -10,10 +10,10 @@
 #include <windows.h>
 #endif
 
-#include "glew.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include "glut.h"
+//#include "glew.h"
+//#include <GL/gl.h>
+//#include <GL/glu.h>
+//#include "glut.h"
 #include <map>
 #include <stdarg.h>
 
@@ -39,9 +39,9 @@ class GLSLProgram
   private:
 	std::map<char *, int>	AttributeLocs;
 	char *			Cfile;
-	unsigned int		Cshader;
+	unsigned int	Cshader;
 	char *			Ffile;
-	unsigned int		Fshader;
+	unsigned int	Fshader;
 	char *			Gfile;
 	GLuint			Gshader;
 	bool			IncludeGstap;
@@ -68,10 +68,10 @@ class GLSLProgram
 	bool	CanDoTessControlShaders;
 	bool	CanDoTessEvaluationShaders;
 	bool	CanDoVertexShaders;
-	int	CompileShader( GLuint );
+	int		CompileShader( GLuint );
 	bool	CreateHelper( char *, ... );
-	int	GetAttributeLocation( char * );
-	int	GetUniformLocation( char * );
+	int		GetAttributeLocation( char * );
+	int		GetUniformLocation( char * );
 
 
   public:

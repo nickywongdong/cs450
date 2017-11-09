@@ -405,12 +405,12 @@ GLSLProgram::CreateHelper( char *file0, ... )
 }
 
 
-void
+/*void
 GLSLProgram::DispatchCompute( GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z )
 {
 	Use( );
 	glDispatchCompute( num_groups_x, num_groups_y, num_groups_z );
-}
+}*/
 
 
 bool
@@ -780,7 +780,7 @@ CheckGlErrors( const char* caller )
 
 
 
-void
+/*void
 GLSLProgram::SaveProgramBinary( const char * fileName, GLenum * format )
 {
 	glProgramParameteri( this->Program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE );
@@ -800,8 +800,7 @@ GLSLProgram::SaveProgramBinary( const char * fileName, GLenum * format )
 	fwrite( buffer, length, 1, fpout );
 	fclose( fpout );
 	delete [ ] buffer;
-}
-
+}*/
 
 void
 GLSLProgram::LoadProgramBinary( const char * fileName, GLenum format )
