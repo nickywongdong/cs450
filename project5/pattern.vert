@@ -15,5 +15,5 @@ main( )
 
 	vST = gl_MultiTexCoord0.st;
 	vColor = pos.xyz; // set rgb from xyz!
-	gl_Position = gl_ModelViewProjectionMatrix * vec4( sin(uTime * PI) * (gl_Vertex.x), (gl_Vertex.y), (gl_Vertex.z), 1. );
+	gl_Position = gl_ModelViewProjectionMatrix * vec4( sin(uTime * PI) * (gl_Vertex.x), (gl_Vertex.y) + (uTime * uTime) + uTime, (gl_Vertex.z), 1. );
 }

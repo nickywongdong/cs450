@@ -742,17 +742,6 @@ InitGraphics( )
 
 	// init glew (a window must be open to do this):
 
-#ifdef WIN32
-	GLenum err = glewInit( );
-	if( err != GLEW_OK )
-	{
-		fprintf( stderr, "glewInit Error\n" );
-	}
-	else
-		fprintf( stderr, "GLEW initialized OK\n" );
-	fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-#endif
-
 
 	Pattern = new GLSLProgram( );
 	bool valid = Pattern->Create( "pattern.vert",  "pattern.frag" );
