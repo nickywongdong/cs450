@@ -1,3 +1,6 @@
 
-ERROR: 0:18: No matching function for call to pow(float, int)
+ERROR: 0:6: Cannot retroactivly qualify undeclared identifier 'uA'
+ERROR: 0:7: Cannot retroactivly qualify undeclared identifier 'uB'
+ERROR: 0:20: Use of undeclared identifier 'uA'
+ERROR: 0:20: Use of undeclared identifier 'uB'
 

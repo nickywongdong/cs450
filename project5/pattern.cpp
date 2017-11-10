@@ -80,6 +80,9 @@ const int MIDDLE = { 2 };
 const int RIGHT  = { 1 };
 
 
+//math
+const float PI = 	3.14159265;
+
 // which projection:
 
 enum Projections
@@ -176,9 +179,9 @@ int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 bool 	Freeze = false;			// freeze on keyboard press
-bool 	Light0On = true;		// keyboard light on bools
-bool 	Light1On = true;
-bool 	Light2On = true;
+bool 	vertexBool = true;
+bool 	fragmentBool = true;
+float 	A, B, C, D;
 
 
 // function prototypes:
@@ -447,6 +450,7 @@ Display( )
 	{
 		glColor3fv( &Colors[WhichColor][0] );
 		glCallList( AxesList );
+
 	}
 
 
@@ -454,8 +458,32 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
+	//turning vertex and fragment effects on and off:
+
 	Pattern->Use( );
-	Pattern->SetUniformVariable( "uTime",  Time );
+	A = 1.;
+	B = 1.;
+	C = 1.;
+	D = 1.;
+	if( vertexBool )
+	{
+		//A = << some function of Time >>
+		//B = << some function of Time >>
+		A = sin(Time * PI);
+		B = (Time * Time) + Time;
+		Pattern->SetUniformVariable( "uA", A );
+		Pattern->SetUniformVariable( "uB", B );
+		//Pattern->SetUniformVariable( "uTime",  Time );
+	}
+
+	if( fragmentBool )
+	{
+		D = cos(Time * PI);
+		Pattern->SetUniformVariable( "uC", C );
+		Pattern->SetUniformVariable( "uD", D );
+		//Pattern->SetUniformVariable( "uTime",  Time );
+	}
+
 	glCallList( SphereList );
 	//glutSolidCone(1.,  1.,  10.,  10.);
 	Pattern->Use( 0 );
@@ -794,8 +822,24 @@ Keyboard( unsigned char c, int x, int y )
 
 	switch( c )
 	{
-		case 'f':
+		case 'b':
+		case 'B':
+			vertexBool = true;
+			fragmentBool = true;
+			break;
 		case 'F':
+			fragmentBool = true;
+			vertexBool = false;
+			break;
+		case 'N':
+			vertexBool = false;
+			fragmentBool = false;
+			break;
+		case 'V':
+			vertexBool = true;
+			fragmentBool = false;
+			break;
+		case 'f':
 		Freeze = ! Freeze;
 		if( Freeze )
 			glutIdleFunc( NULL );
