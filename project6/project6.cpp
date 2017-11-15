@@ -15,6 +15,8 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
+#include "loadobjfile.cpp"
+
 
 // title of these windows:
 
@@ -155,7 +157,7 @@ int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 //GLuint	BoxList;				// object display list
-GLuint 	BezierCurve;
+GLuint 	myOBJ;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -444,6 +446,12 @@ Display( )
    // since we are using glScalef( ), be sure normals get unitized:
 
    glEnable( GL_NORMALIZE );
+
+   //draw my winged dude
+   glPushMatrix();
+   glScalef(0.1, 0.1, 0.1);
+   glCallList( myOBJ );
+   glPopMatrix();
 
 
 
@@ -892,6 +900,11 @@ InitLists( )
 
    //BezierCurve = glGenLists( 1 );
    //glNewList( BezierCurve, GL_COMPILE );
+
+	myOBJ = glGenLists( 1 );
+	glNewList( myOBJ, GL_COMPILE );
+	LoadObjFile( "Avent.obj" );
+	glEndList( );
 
    // create the axes:
 
