@@ -177,7 +177,7 @@ int		WhichColor;				// index into Colors[ ]
 int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
-
+bool 	Freeze = false;			// freeze on keyboard press
 
 // function prototypes:
 
@@ -749,6 +749,14 @@ DoStrokeString( float x, float y, float z, float ht, char *s )
 
 		switch( c )
 		{
+			case 'f':
+			Freeze = !Freeze;
+			if( Freeze )
+				glutIdleFunc( NULL );
+			else
+				glutIdleFunc( Animate );
+			break;
+
 			case 'o':
 			case 'O':
 			WhichProjection = ORTHO;
