@@ -163,7 +163,7 @@ int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 bool 	Freeze = false;			// freeze on keyboard press
-int 	NUMPOINTS = 5;
+int 	NUMPOINTS = 10;
 
 
 
@@ -446,43 +446,47 @@ Display( )
    glEnable( GL_NORMALIZE );
 
 
-   // draw the current object:
+
+   // Draw Right Wing
    for(int i=0; i<5; i++){
 
+   	Curves[i].r = Time;
+   	Curves[i].g = Time;
+   	Curves[i].b = Time;
+
    	//animated points
-   	Curves[i].p0.x = 0. * (float)i * Time;
-   	Curves[i].p0.y = 0. * (float)i * Time;
-   	Curves[i].p0.z = -8. * (float)i * Time;
+   	Curves[i].p0.x = 0. * (float)i;
+   	Curves[i].p0.y = 0. * (float)i;
+   	Curves[i].p0.z = 0. * (float)i;
 
    	Curves[i].p1.x = 1. * (float)i;
-   	Curves[i].p1.y = 1. * (float)i;
-   	Curves[i].p1.z = 1. * (float)i;
+   	Curves[i].p1.y = 1. * (float)i * 10 * cos(Time * 6.2);
+   	Curves[i].p1.z = 1. * (float)i * cos(Time * 6.2);
 
    	Curves[i].p2.x = 4. * (float)i;
-   	Curves[i].p2.y = 1. * (float)i;
-   	Curves[i].p2.z = 1. * (float)i;
+   	Curves[i].p2.y = 1. * (float)i * 10 * sin(Time* 6.2);
+   	Curves[i].p2.z = 1. * (float)i * sin(Time* 6.2);
 
-   	Curves[i].p3.x = 5. * (float)i;
+   	Curves[i].p3.x = 5. * (float)i * cos(Time);
    	Curves[i].p3.y = 0. * (float)i;
-   	Curves[i].p3.z = 1. * (float)i;
+   	Curves[i].p3.z = 1. * (float)i * cos(Time);
 
    	//Frozen points
-   	Curves[i].p0.x0 = 0.;
-   	Curves[i].p0.y0 = 0.;
-   	Curves[i].p0.z0 = -8.;
+   	Curves[i].p0.x0 = 0. * float(i);
+   	Curves[i].p0.y0 = 0. * float(i);
+   	Curves[i].p0.z0 = -8. * float(i);
 
-   	Curves[i].p1.x0 = 1.;
-   	Curves[i].p1.y0 = 1.;
-   	Curves[i].p1.z0 = 1.;
+   	Curves[i].p1.x0 = 1. * float(i);
+   	Curves[i].p1.y0 = 1. * float(i);
+   	Curves[i].p1.z0 = 1. * float(i);
 
-   	Curves[i].p2.x0 = 4.;
-   	Curves[i].p2.y0 = 1.;
-   	Curves[i].p2.z0 = 1.;
+   	Curves[i].p2.x0 = 4. * float(i);
+   	Curves[i].p2.y0 = 1. * float(i);
+   	Curves[i].p2.z0 = 1. * float(i);
 
-   	Curves[i].p3.x0 = 5.;
-   	Curves[i].p3.y0 = 0.;
-   	Curves[i].p3.z0 = 1.;
-   //}
+   	Curves[i].p3.x0 = 5. * float(i);
+   	Curves[i].p3.y0 = 0. * float(i);
+   	Curves[i].p3.z0 = 1. * float(i);
 
 
    	glLineWidth( 3. );
@@ -502,6 +506,7 @@ Display( )
    			z = omt*omt*omt*Curves[i].p0.z0 + 3.f*t*omt*omt*Curves[i].p1.z0 + 3.f*t*t*omt*Curves[i].p2.z0 + t*t*t*Curves[i].p3.z0;
    		}
    		
+   		glColor3f( Curves[i].r, Curves[i].g, Curves[i].b );
    		glVertex3f( x, y, z );
 
 
@@ -509,6 +514,74 @@ Display( )
    	glEnd( );
    	glLineWidth( 1. );
 
+   }
+
+   // Draw Left Wing
+   for(int i=0; i<5; i++){
+   	Curves[i].r = Time;
+   	Curves[i].g = Time;
+   	Curves[i].b = Time;
+
+   	//animated points
+   	Curves[i].p0.x = -0. * (float)i;
+   	Curves[i].p0.y = -0. * (float)i;
+   	Curves[i].p0.z = -0. * (float)i;
+
+   	Curves[i].p1.x = -1. * (float)i;
+   	Curves[i].p1.y = -1. * (float)i * 10 * -cos(Time * 6.2);
+   	Curves[i].p1.z = -1. * (float)i * cos(Time * 6.2);
+
+   	Curves[i].p2.x = -4. * (float)i;
+   	Curves[i].p2.y = -1. * (float)i * 10 * -sin(Time* 6.2);
+   	Curves[i].p2.z = -1. * (float)i * sin(Time* 6.2);
+
+   	Curves[i].p3.x = -5. * (float)i * cos(Time);
+   	Curves[i].p3.y = -0. * (float)i;
+   	Curves[i].p3.z = -1. * (float)i * cos(Time);
+
+   	//Frozen points
+   	Curves[i].p0.x0 = -0. * float(i);
+   	Curves[i].p0.y0 = -0. * float(i);
+   	Curves[i].p0.z0 = 8. * float(i);
+
+   	Curves[i].p1.x0 = -1. * float(i);
+   	Curves[i].p1.y0 = -1. * float(i);
+   	Curves[i].p1.z0 = -1. * float(i);
+
+   	Curves[i].p2.x0 = -4. * float(i);
+   	Curves[i].p2.y0 = -1. * float(i);
+   	Curves[i].p2.z0 = -1. * float(i);
+
+   	Curves[i].p3.x0 = -5. * float(i);
+   	Curves[i].p3.y0 = -0. * float(i);
+   	Curves[i].p3.z0 = -1. * float(i);
+
+   	glLineWidth( 3. );
+   	glColor3f( 1., 1., 1. );
+   	glBegin( GL_LINE_STRIP );
+   	for( int it = 0; it <= NUMPOINTS; it++ )
+   	{
+   		float t = (float)it / (float)NUMPOINTS;
+   		float omt = 1.f - t;
+
+   		float x = omt*omt*omt*Curves[i].p0.x + 3.f*t*omt*omt*Curves[i].p1.x + 3.f*t*t*omt*Curves[i].p2.x + t*t*t*Curves[i].p3.x;
+   		float y = omt*omt*omt*Curves[i].p0.y + 3.f*t*omt*omt*Curves[i].p1.y + 3.f*t*t*omt*Curves[i].p2.y + t*t*t*Curves[i].p3.y;
+   		float z = omt*omt*omt*Curves[i].p0.z + 3.f*t*omt*omt*Curves[i].p1.z + 3.f*t*t*omt*Curves[i].p2.z + t*t*t*Curves[i].p3.z;
+   		if(Freeze){
+   			x = omt*omt*omt*Curves[i].p0.x0 + 3.f*t*omt*omt*Curves[i].p1.x0 + 3.f*t*t*omt*Curves[i].p2.x0 + t*t*t*Curves[i].p3.x0;
+   			y = omt*omt*omt*Curves[i].p0.y0 + 3.f*t*omt*omt*Curves[i].p1.y0 + 3.f*t*t*omt*Curves[i].p2.y0 + t*t*t*Curves[i].p3.y0;
+   			z = omt*omt*omt*Curves[i].p0.z0 + 3.f*t*omt*omt*Curves[i].p1.z0 + 3.f*t*t*omt*Curves[i].p2.z0 + t*t*t*Curves[i].p3.z0;
+   		}
+
+   		glColor3f( Curves[i].r, Curves[i].g, Curves[i].b );
+   		glVertex3f( x, y, z );
+  
+
+
+   	}
+
+   	glEnd( );
+   	glLineWidth( 1. );
    }
 
 
