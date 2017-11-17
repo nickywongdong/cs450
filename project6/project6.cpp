@@ -153,6 +153,8 @@ const GLfloat FOGEND      = { 4. };
 
 int		ActiveButton;			// current button that is down
 GLuint	AxesList;				// list to hold the axes
+int 	ControlLinesOn;
+int 	ControlPointsOn;
 int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
@@ -189,6 +191,8 @@ Curve Curves[5];		// if you are creating a pattern of curves
 
 void	Animate( );
 void	Display( );
+void 	DoControlLinesMenu( int );
+void 	DoControlPointsMenu( int );
 void	DoAxesMenu( int );
 void	DoColorMenu( int );
 void	DoDepthMenu( int );
@@ -342,6 +346,49 @@ Animate( )
 }
 
 
+void drawControlPoints(Curve *c){
+
+	glColor3f( 0.502, 0.000, 0.000 );
+	glPointSize( 10 );
+	for(int i=0; i<NUMPOINTS; i++){
+		glBegin( GL_POINTS );
+		glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
+		glEnd(  );
+
+		glBegin( GL_POINTS );
+		glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
+		glEnd(  );
+
+		glBegin( GL_POINTS );
+		glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
+		glEnd(  );
+
+		glBegin( GL_POINTS );
+		glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
+		glEnd(  );
+
+	}
+	glEnd(  );
+
+
+}
+
+void drawControlLines(Curve *c){
+
+	glColor3f( 1.000, 0.627, 0.478 );
+
+	glBegin( GL_LINE_STRIP );
+	for(int i=0; i<NUMPOINTS; i++){
+		glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
+		glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
+		glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
+		glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
+	}
+	glEnd(  );
+
+
+}
+
 // draw the complete scene:
 
    void
@@ -447,12 +494,21 @@ Display( )
 
    glEnable( GL_NORMALIZE );
 
-   //draw my winged dude
+   //draw a car in the center
    glPushMatrix();
-   glScalef(0.1, 0.1, 0.1);
+   glColor3f( 0.184, 0.310, 0.310 );
+   glTranslatef( 0., 0., 1. );
+   //glRotatef( 90, 0., 1., 0. );
+   glScalef(2., 2., 2.);
    glCallList( myOBJ );
    glPopMatrix();
 
+   if(ControlPointsOn){
+   	drawControlPoints(Curves);
+   }
+   if(ControlLinesOn == 1){
+   	drawControlLines(Curves);
+   }
 
 
    // Draw Right Wing
@@ -496,7 +552,6 @@ Display( )
    	Curves[i].p3.y0 = 0. * float(i);
    	Curves[i].p3.z0 = 1. * float(i);
 
-
    	glLineWidth( 3. );
    	glColor3f( 1., 1., 1. );
    	glBegin( GL_LINE_STRIP );
@@ -524,6 +579,16 @@ Display( )
 
    }
 
+
+
+   if(ControlPointsOn){
+   	drawControlPoints(Curves);
+   }
+ 
+   if(ControlLinesOn){
+   	drawControlLines(Curves);
+   }
+
    // Draw Left Wing
    for(int i=0; i<5; i++){
    	Curves[i].r = Time;
@@ -541,7 +606,7 @@ Display( )
 
    	Curves[i].p2.x = -4. * (float)i;
    	Curves[i].p2.y = -1. * (float)i * 10 * -sin(Time* 6.2);
-   	Curves[i].p2.z = -1. * (float)i * sin(Time* 6.2);
+   	Curves[i].p2.z = -1. * (float)i * -sin(Time* 6.2);
 
    	Curves[i].p3.x = -5. * (float)i * cos(Time);
    	Curves[i].p3.y = -0. * (float)i;
@@ -631,6 +696,19 @@ Display( )
    glFlush( );
 }
 
+void DoControlPointsMenu( int id ){
+	ControlPointsOn = id;
+
+	glutSetWindow( MainWindow );
+	glutPostRedisplay(  );
+}
+
+void DoControlLinesMenu( int id ){
+	ControlLinesOn = id;
+
+	glutSetWindow( MainWindow );
+	glutPostRedisplay(  );
+}
 
    void
 DoAxesMenu( int id )
@@ -774,6 +852,14 @@ InitMenus( )
       glutAddMenuEntry( ColorNames[i], i );
    }
 
+   int controllinesmenu = glutCreateMenu( DoControlLinesMenu );
+   glutAddMenuEntry( "Off", 0 );
+   glutAddMenuEntry( "On",   1 );
+
+   int controlpointsmenu = glutCreateMenu( DoControlPointsMenu );
+   glutAddMenuEntry( "Off", 0 );
+   glutAddMenuEntry( "On",   1 );
+
    int axesmenu = glutCreateMenu( DoAxesMenu );
    glutAddMenuEntry( "Off",  0 );
    glutAddMenuEntry( "On",   1 );
@@ -791,6 +877,8 @@ InitMenus( )
    glutAddMenuEntry( "Perspective",   PERSP );
 
    int mainmenu = glutCreateMenu( DoMainMenu );
+   glutAddSubMenu(	 "Control Lines", controllinesmenu);
+   glutAddSubMenu(   "Control Points",controlpointsmenu);
    glutAddSubMenu(   "Axes",          axesmenu);
    glutAddSubMenu(   "Colors",        colormenu);
    glutAddSubMenu(   "Depth Cue",     depthcuemenu);
@@ -903,7 +991,7 @@ InitLists( )
 
 	myOBJ = glGenLists( 1 );
 	glNewList( myOBJ, GL_COMPILE );
-	LoadObjFile( "Avent.obj" );
+	LoadObjFile( "Male.OBJ" );
 	glEndList( );
 
    // create the axes:
@@ -1051,6 +1139,8 @@ MouseMotion( int x, int y )
    void
 Reset( )
 {
+   ControlPointsOn = 1;
+   ControlLinesOn = 1;
    ActiveButton = 0;
    AxesOn = 1;
    DebugOn = 0;
