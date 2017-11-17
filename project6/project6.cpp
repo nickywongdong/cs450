@@ -351,21 +351,41 @@ void drawControlPoints(Curve *c){
 	glColor3f( 0.502, 0.000, 0.000 );
 	glPointSize( 10 );
 	for(int i=0; i<NUMPOINTS; i++){
-		glBegin( GL_POINTS );
-		glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
-		glEnd(  );
 
-		glBegin( GL_POINTS );
-		glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
-		glEnd(  );
+		if(Freeze){
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p0.x0, c[i].p0.y0, c[i].p0.z0 );
+			glEnd(  );
 
-		glBegin( GL_POINTS );
-		glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
-		glEnd(  );
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p1.x0, c[i].p1.y0, c[i].p1.z0 );
+			glEnd(  );
 
-		glBegin( GL_POINTS );
-		glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
-		glEnd(  );
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p2.x0, c[i].p2.y0, c[i].p2.z0 );
+			glEnd(  );
+
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p3.x0, c[i].p3.y0, c[i].p3.z0 );
+			glEnd(  );
+		}
+		else{
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
+			glEnd(  );
+
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
+			glEnd(  );
+
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
+			glEnd(  );
+
+			glBegin( GL_POINTS );
+			glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
+			glEnd(  );
+		}
 
 	}
 	glEnd(  );
@@ -379,10 +399,18 @@ void drawControlLines(Curve *c){
 
 	glBegin( GL_LINE_STRIP );
 	for(int i=0; i<NUMPOINTS; i++){
-		glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
-		glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
-		glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
-		glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
+		if(!Freeze){
+			glVertex3f( c[i].p0.x, c[i].p0.y, c[i].p0.z );
+			glVertex3f( c[i].p1.x, c[i].p1.y, c[i].p1.z );
+			glVertex3f( c[i].p2.x, c[i].p2.y, c[i].p2.z );
+			glVertex3f( c[i].p3.x, c[i].p3.y, c[i].p3.z );
+		}
+		else{
+			glVertex3f( c[i].p0.x0, c[i].p0.y0, c[i].p0.z0 );
+			glVertex3f( c[i].p1.x0, c[i].p1.y0, c[i].p1.z0 );
+			glVertex3f( c[i].p2.x0, c[i].p2.y0, c[i].p2.z0 );
+			glVertex3f( c[i].p3.x0, c[i].p3.y0, c[i].p3.z0 );
+		}
 	}
 	glEnd(  );
 
