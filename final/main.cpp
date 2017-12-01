@@ -21,9 +21,13 @@
 
 // title of these windows:
 
-const char *WINDOWTITLE = { "OpenGL / GLUT Sample -- Joe Graphics" };
-const char *GLUITITLE   = { "User Interface Window" };
+const char *WINDOWTITLE = { "OpenGL -- Nick Wong" };
+const char *GLUITITLE   = { "Final Project" };
 
+
+//animatetion cycle ms:
+float Time;
+#define MS_PER_CYCLE 5000
 
 // what the glui package defines as true and false:
 
@@ -250,13 +254,18 @@ main( int argc, char *argv[ ] )
 void
 Animate( )
 {
+
 	// put animation stuff in here -- change some global variables
-	// for Display( ) to find:
+   // for Display( ) to find:
 
-	// force a call to Display( ) next time it is convenient:
+   int ms = glutGet( GLUT_ELAPSED_TIME );
+   ms %= MS_PER_CYCLE;
+   Time = (float)ms / (float)MS_PER_CYCLE;		// [0.,1.)
 
-	glutSetWindow( MainWindow );
-	glutPostRedisplay( );
+   // force a call to Display( ) next time it is convenient:
+
+   glutSetWindow( MainWindow );
+   glutPostRedisplay( );
 }
 
 
@@ -369,7 +378,7 @@ Display( )
 	// draw the current object:
 
 	//glEnable( GL_TEXTURE_2D );
-	glColor3f(1., 0., 0.);
+	glColor3f(1., (cos((Time * 0.5) * M_PI)) + 0.75, (cos((Time * 0.75) * M_PI)) + 0.420);
 	glCallList( Face1 );			//+z
 	glCallList( Face2 );			//-z
 	glCallList( Face3 );			//+x
@@ -384,7 +393,7 @@ Display( )
 	// draw some gratuitous text that just rotates on top of the scene:
 
 	glDisable( GL_DEPTH_TEST );
-	glColor3f( 0., 1., 1. );
+	//glColor3f( 0., 1., 1. );
 	DoRasterString( 0., 1., 0., "Text That Moves" );
 
 
@@ -659,7 +668,7 @@ InitGraphics( )
 	glutTabletButtonFunc( NULL );
 	glutMenuStateFunc( NULL );
 	glutTimerFunc( -1, NULL, 0 );
-	glutIdleFunc( NULL );
+	glutIdleFunc( Animate );
 
 	// init glew (a window must be open to do this):
 
@@ -687,7 +696,7 @@ setupTextures(){
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
 	//texture environment
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	return;
 }
@@ -742,7 +751,7 @@ InitLists( )
 
 		glBegin( GL_QUADS );
 
-			glColor3f( 1., 0., 1. );
+			//glColor3f( 1., 1., 1. );
 			glNormal3f( 0., 0.,  1. );
 				glTexCoord2f( 0., 0. );
 				glVertex3f( -dx, -dy,  dz );
@@ -772,6 +781,7 @@ InitLists( )
 	//glTranslatef(0., 0., 0.);
 
 		glBegin( GL_QUADS );
+		//glColor3f( 1., 0., 1. );
 		glNormal3f( 0., 0., -1. );
 				glTexCoord2f( 0., 0. );
 				glVertex3f( -dx, -dy, -dz );
@@ -801,8 +811,8 @@ InitLists( )
 
 		glBegin( GL_QUADS );
 
-			glColor3f( 1., 0., 0. );
-			glNormal3f(  1., 0., 0. );
+			//glColor3f( 1., 0., 0. );
+		glNormal3f(  1., 0., 0. );
 				glTexCoord2f( 0., 0. );
 				glVertex3f(  dx, -dy,  dz );
 				glTexCoord2f( 1., 0. );
@@ -830,6 +840,7 @@ InitLists( )
 	//glTranslatef(0., 0., 0.);
 
 		glBegin( GL_QUADS );
+		//glColor3f( 1., 0., 1. );
 		glNormal3f( -1., 0., 0. );
 				glTexCoord2f( 1., 0. );
 				glVertex3f( -dx, -dy,  dz );
@@ -858,6 +869,7 @@ InitLists( )
 	//glTranslatef(0., 0., 0.);
 
 		glBegin( GL_QUADS );
+		//glColor3f( 1., 0., 1. );
 		glNormal3f( 0.,  1., 0. );
 				glTexCoord2f( 1., 1. );			
 				glVertex3f( -dx,  dy,  dz );
@@ -886,6 +898,7 @@ InitLists( )
 	//glTranslatef(0., 0., 0.);
 
 		glBegin( GL_QUADS );
+		//glColor3f( 1., 0., 1. );
 		glNormal3f( 0., -1., 0. );
 				glTexCoord2f( 0., 0. );
 				glVertex3f( -dx, -dy,  dz );
