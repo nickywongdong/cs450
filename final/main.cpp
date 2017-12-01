@@ -24,10 +24,16 @@
 const char *WINDOWTITLE = { "OpenGL -- Nick Wong" };
 const char *GLUITITLE   = { "Final Project" };
 
+//Sphere dimensions:
+#define SPHERE_RADIUS	0.5
+#define SPHERE_SLICES	300
+#define SPHERE_STACKS	300
 
 //animatetion cycle ms:
 float Time;
 #define MS_PER_CYCLE 5000
+
+#include "sphere.cpp"
 
 // what the glui package defines as true and false:
 
@@ -47,7 +53,7 @@ const int INIT_WINDOW_SIZE = { 600 };
 
 // size of the box:
 
-const float BOXSIZE = { 10.f };
+const float BOXSIZE = { 2.f };
 
 
 
@@ -164,6 +170,7 @@ GLuint	Face3;
 GLuint	Face4;
 GLuint	Face5;
 GLuint	Face6;
+GLuint 	SphereList;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
@@ -241,6 +248,80 @@ main( int argc, char *argv[ ] )
 	// this is here to make the compiler happy:
 
 	return 0;
+}
+
+
+
+//utility to create an array from 3 separate values:
+float *Array3( float a, float b, float c ){
+	static float array[4];
+
+	array[0] = a;
+	array[1] = b;
+	array[2] = c;
+	array[3] = 1.;
+	return array;
+}
+
+//utility to create an array from a multiplier and an array:
+float *MulArray3( float factor, float array0[3] ){
+	static float array[4];
+
+	array[0] = factor * array0[0];
+	array[1] = factor * array0[1];
+	array[2] = factor * array0[2];
+	array[3] = 1.;
+
+	return array;
+}
+
+
+//shortcuts for lighting
+void
+SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, float zdir, float r, float g, float b )
+{
+	glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
+	glLightfv( ilight, GL_SPOT_DIRECTION, Array3(xdir,ydir,zdir) );
+	glLightf( ilight, GL_SPOT_EXPONENT, 1. );
+	glLightf( ilight, GL_SPOT_CUTOFF, 90. );
+	glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
+	glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
+	glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
+	glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
+	glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
+	glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+	glEnable( ilight );
+}
+
+void
+SetPointLight( int ilight, float x, float y, float z, float r, float g, float b )
+{
+	glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
+	glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
+	glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
+	glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
+	glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
+	glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
+	glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+	glEnable( ilight );
+}
+
+void
+SetMaterial( float r, float g, float b, float shininess )
+{
+	//lighting colors
+
+ 	float White[ ] = { 1.,1.,1.,1. };
+	glMaterialfv( GL_BACK, GL_EMISSION, Array3( 0., 0., 0. ) );
+	glMaterialfv( GL_BACK, GL_AMBIENT, MulArray3( .4f, White ) );
+	glMaterialfv( GL_BACK, GL_DIFFUSE, MulArray3( 1., White ) );
+	glMaterialfv( GL_BACK, GL_SPECULAR, Array3( 0., 0., 0. ) );
+	glMaterialf ( GL_BACK, GL_SHININESS, 2.f );
+	glMaterialfv( GL_FRONT, GL_EMISSION, Array3( 0., 0., 0. ) );
+	glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b ) );
+	glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b ) );
+	glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, White ) );
+	glMaterialf ( GL_FRONT, GL_SHININESS, shininess );
 }
 
 
@@ -375,9 +456,28 @@ Display( )
 	glEnable( GL_NORMALIZE );
 
 
-	// draw the current object:
 
+	//Draw the "Sun"
+
+	glEnable( GL_LIGHTING );
+
+	glPushMatrix();
+	//(Positionx, y, z)(xdir, ydir, zdir)(R, G, B)
+	SetSpotLight( GL_LIGHT1, 0., 5., 0., 0., 0., 0., 1.000, 0.843, 0.000 );
+	//glColor3f(1., 1., 1.);
+	glTranslatef(0., 5., 0.);
+	SetMaterial( 1., 1., 1., 1. );
+	glDisable( GL_LIGHTING );
+	glCallList( SphereList );
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
+
+	//glDisable( GL_LIGHTING );
+
+	//Draw the SkyBox
 	//glEnable( GL_TEXTURE_2D );
+	SetMaterial( 1., 1., 1., 1. );
 	glColor3f(1., (cos((Time * 0.5) * M_PI)) + 0.75, (cos((Time * 0.75) * M_PI)) + 0.420);
 	glCallList( Face1 );			//+z
 	glCallList( Face2 );			//-z
@@ -716,6 +816,22 @@ InitLists( )
 	level = 0;	//mip-mapping
 	ncomps = 3;	//number of components in texture: RGB
 	border = 0;	//width of texture border, in pixels
+
+
+
+	unsigned char *suntex = BmpToTexture("Sun.bmp", &texWidth[0], &texHeight[0]);
+
+	//SphereList for "Sun"
+	//Draw Sphere (spotlight sphere)
+	SphereList = glGenLists( 1 );
+	glNewList( SphereList, GL_COMPILE );
+	setupTextures();
+	//downloading texture and making it current texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, level, ncomps, texWidth[0], texHeight[0], border, GL_RGB, GL_UNSIGNED_BYTE, suntex);
+
+	MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
+	glEndList();
 
 	//Read in Texture
 	//texture src:
