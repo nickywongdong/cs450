@@ -53,7 +53,7 @@ const int INIT_WINDOW_SIZE = { 600 };
 
 // size of the box:
 
-const float BOXSIZE = { 2.f };
+const float BOXSIZE = { 1000.f };
 
 
 
@@ -164,6 +164,7 @@ GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
+GLuint 	BoxList;
 GLuint	Face1;					// object display list
 GLuint	Face2;
 GLuint	Face3;
@@ -283,7 +284,7 @@ SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, flo
 	glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
 	glLightfv( ilight, GL_SPOT_DIRECTION, Array3(xdir,ydir,zdir) );
 	glLightf( ilight, GL_SPOT_EXPONENT, 1. );
-	glLightf( ilight, GL_SPOT_CUTOFF, 90. );
+	glLightf( ilight, GL_SPOT_CUTOFF, 128. );
 	glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
 	glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
 	glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
@@ -462,32 +463,50 @@ Display( )
 	glEnable( GL_LIGHTING );
 
 	glPushMatrix();
-	//(Positionx, y, z)(xdir, ydir, zdir)(R, G, B)
-	SetSpotLight( GL_LIGHT1, 0., 5., 0., 0., 0., 0., 1.000, 0.843, 0.000 );
-	//glColor3f(1., 1., 1.);
-	glTranslatef(0., 5., 0.);
-	SetMaterial( 1., 1., 1., 1. );
-	glDisable( GL_LIGHTING );
-	glCallList( SphereList );
+		//(Positionx, y, z)(xdir, ydir, zdir)(R, G, B)
+		SetSpotLight( GL_LIGHT1, 0., 5., 0., 0., 0., 0., 1.000, 0.843, 0.000 );
+		//glColor3f(1., 1., 1.);
+		glTranslatef(0., 5., 0.);
+		SetMaterial( 1., 1., 1., 1. );
+		//glDisable( GL_LIGHTING );
+		glCallList( SphereList );
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING);
+	//testing draw a ground
+	/*glPushMatrix();
+		glEnable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+		MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
+	glPopMatrix();*/
+
+	//draw the ground:
+	glPushMatrix();
+		//glTranslatef( 0., 5., 0. );
+		glEnable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+		//glColor3f( 0.133, 0.545, 0.133 );
+		glCallList( BoxList );
+	glPopMatrix();
+
+	//glEnable(GL_LIGHTING);
 
 	//glDisable( GL_LIGHTING );
 
 	//Draw the SkyBox
 	//glEnable( GL_TEXTURE_2D );
-	SetMaterial( 1., 1., 1., 1. );
-	glColor3f(1., (cos((Time * 0.5) * M_PI)) + 0.75, (cos((Time * 0.75) * M_PI)) + 0.420);
-	glCallList( Face1 );			//+z
-	glCallList( Face2 );			//-z
-	glCallList( Face3 );			//+x
-	glCallList( Face4 );			//side 4
-	glCallList( Face5 );			//top
-	glCallList( Face6 );			//bottom
-	//glEnable( GL_TEXTURE_2D );
-	//glDisable( GL_TEXTURE_2D );
 
+	glPushMatrix();
+		SetMaterial( 1., 1., 1., 1. );
+		glColor3f(1., (cos((Time * 0.5) * M_PI)) + 0.75, (cos((Time * 0.75) * M_PI)) + 0.420);
+		glCallList( Face1 );			//+z
+		glCallList( Face2 );			//-z
+		glCallList( Face3 );			//+x
+		glCallList( Face4 );			//side 4
+		glCallList( Face5 );			//top
+		glCallList( Face6 );			//bottom
+		//glEnable( GL_TEXTURE_2D );
+		//glDisable( GL_TEXTURE_2D );
+	glPopMatrix();
 
 
 	// draw some gratuitous text that just rotates on top of the scene:
@@ -825,6 +844,7 @@ InitLists( )
 	//Draw Sphere (spotlight sphere)
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
+	glDisable( GL_LIGHTING );
 	setupTextures();
 	//downloading texture and making it current texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -852,6 +872,8 @@ InitLists( )
 
 	Face1 = glGenLists( 1 );
 	glNewList( Face1, GL_COMPILE );
+
+	glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex1 );
 	glEnable( GL_TEXTURE_2D );
@@ -883,6 +905,7 @@ InitLists( )
 
 	Face2 = glGenLists( 1 );
 	glNewList( Face2, GL_COMPILE );
+	glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex2 );
 	glEnable( GL_TEXTURE_2D );
@@ -899,19 +922,20 @@ InitLists( )
 		glBegin( GL_QUADS );
 		//glColor3f( 1., 0., 1. );
 		glNormal3f( 0., 0., -1. );
-				glTexCoord2f( 0., 0. );
+				glTexCoord2f( 1., 0. );
 				glVertex3f( -dx, -dy, -dz );
 				glTexCoord2f( 1., 1. );
 				glVertex3f( -dx,  dy, -dz );
 				glTexCoord2f( 0., 1. );
 				glVertex3f(  dx,  dy, -dz );
-				glTexCoord2f( 1., 0. );
+				glTexCoord2f( 0., 0. );
 				glVertex3f(  dx, -dy, -dz );
 		glEnd();
 		glEndList();
 
 	Face3 = glGenLists( 1 );
 	glNewList( Face3, GL_COMPILE );
+	glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex3 );
 	glEnable( GL_TEXTURE_2D );
@@ -942,6 +966,7 @@ InitLists( )
 
 	Face4 = glGenLists( 1 );
 	glNewList( Face4, GL_COMPILE );
+	glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex4 );
 	glEnable( GL_TEXTURE_2D );
@@ -971,6 +996,7 @@ InitLists( )
 
 	Face5 = glGenLists( 1 );
 	glNewList( Face5, GL_COMPILE );
+	glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex5 );
 	glEnable( GL_TEXTURE_2D );
@@ -987,19 +1013,20 @@ InitLists( )
 		glBegin( GL_QUADS );
 		//glColor3f( 1., 0., 1. );
 		glNormal3f( 0.,  1., 0. );
-				glTexCoord2f( 1., 1. );			
+				glTexCoord2f( 1., 0. );			
 				glVertex3f( -dx,  dy,  dz );
-				glTexCoord2f( 1., 0. );
+				glTexCoord2f( 1., 1. );
 				glVertex3f(  dx,  dy,  dz );
-				glTexCoord2f( 0., 0. );
-				glVertex3f(  dx,  dy, -dz );
 				glTexCoord2f( 0., 1. );
+				glVertex3f(  dx,  dy, -dz );
+				glTexCoord2f( 0., 0. );
 				glVertex3f( -dx,  dy, -dz );
 		glEnd();
 		glEndList();
 
 	Face6 = glGenLists( 1 );
 	glNewList( Face6, GL_COMPILE );
+	//glEnable( GL_LIGHTING );
 
 	glActiveTexture( *tex6 );
 	glEnable( GL_TEXTURE_2D );
@@ -1028,9 +1055,23 @@ InitLists( )
 		glEndList();
 
 
-		//glEnd( );
+	dx = BOXSIZE / 200.f;
+	dy = 0;
+	dz = BOXSIZE / 200.f;
 
-	//glEndList( );
+	BoxList = glGenLists( 1 );
+	glNewList( BoxList, GL_COMPILE );
+
+		glBegin( GL_QUADS );
+			glNormal3f( 0., -1., 0. );
+				glVertex3f( -dx, -dy,  dz );
+				glVertex3f( -dx, -dy, -dz );
+				glVertex3f(  dx, -dy, -dz );
+				glVertex3f(  dx, -dy,  dz );
+
+		glEnd( );
+
+	glEndList( );
 
 
 	// create the axes:
