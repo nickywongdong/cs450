@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -15,6 +16,8 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
+#include "glslprogram.h"
+#include <OpenGL/gl3.h>
 
 #include "bmptotexture.cpp"
 
@@ -29,11 +32,16 @@ const char *GLUITITLE   = { "Final Project" };
 #define SPHERE_SLICES	300
 #define SPHERE_STACKS	300
 
+GLSLProgram	*Pattern;
+
 //animatetion cycle ms:
 float Time;
 #define MS_PER_CYCLE 5000
 
 #include "sphere.cpp"
+#include "glslprogram.cpp"
+#include "loadobjfile.cpp"
+
 
 // what the glui package defines as true and false:
 
@@ -172,12 +180,18 @@ GLuint	Face4;
 GLuint	Face5;
 GLuint	Face6;
 GLuint 	SphereList;
+GLuint 	Terrain;
+GLuint 	Grass;
 int		MainWindow;				// window id for main graphics window
 float	Scale;					// scaling factor
 int		WhichColor;				// index into Colors[ ]
 int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
+float 	A, B, C, D;
+int 	x, z;						//random number used for firefly generation
+bool 	flag;					//used later to determine negative values for x
+float 	SunR, SunG, SunB;		//sun's rgb values
 
 
 // function prototypes:
@@ -313,15 +327,21 @@ SetMaterial( float r, float g, float b, float shininess )
 	//lighting colors
 
  	float White[ ] = { 1.,1.,1.,1. };
+ 	float grass[] = {0.133, 0.545, 0.133, 1};
+ 	float ground[] = {0.545, 0.271, 0.075, 1};
+
+ 	float color[] = {r, g, b, 1};
+
+
 	glMaterialfv( GL_BACK, GL_EMISSION, Array3( 0., 0., 0. ) );
-	glMaterialfv( GL_BACK, GL_AMBIENT, MulArray3( .4f, White ) );
-	glMaterialfv( GL_BACK, GL_DIFFUSE, MulArray3( 1., White ) );
+	glMaterialfv( GL_BACK, GL_AMBIENT, MulArray3( .4f, color ) );
+	glMaterialfv( GL_BACK, GL_DIFFUSE, MulArray3( 1., color ) );
 	glMaterialfv( GL_BACK, GL_SPECULAR, Array3( 0., 0., 0. ) );
 	glMaterialf ( GL_BACK, GL_SHININESS, 2.f );
 	glMaterialfv( GL_FRONT, GL_EMISSION, Array3( 0., 0., 0. ) );
 	glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b ) );
 	glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b ) );
-	glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, White ) );
+	glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, color ) );
 	glMaterialf ( GL_FRONT, GL_SHININESS, shininess );
 }
 
@@ -445,11 +465,11 @@ Display( )
 
 	// possibly draw the axes:
 
-	if( AxesOn != 0 )
-	{
-		glColor3fv( &Colors[WhichColor][0] );
-		glCallList( AxesList );
-	}
+	//if( AxesOn != 0 )
+	//{
+	//	glColor3fv( &Colors[WhichColor][0] );
+	//	glCallList( AxesList );
+	//}
 
 
 	// since we are using glScalef( ), be sure normals get unitized:
@@ -460,44 +480,42 @@ Display( )
 
 	//Draw the "Sun"
 
+	SunR = 1;
+	SunG = (cos(2 * (Time * 0.25) * M_PI)) + 0.75;
+	SunB = (cos(2 *(Time * 0.375) * M_PI)) + 0.420;
+
 	glEnable( GL_LIGHTING );
 
 	glPushMatrix();
-		//(Positionx, y, z)(xdir, ydir, zdir)(R, G, B)
-		SetSpotLight( GL_LIGHT1, 0., 5., 0., 0., 0., 0., 1.000, 0.843, 0.000 );
-		//glColor3f(1., 1., 1.);
-		glTranslatef(0., 5., 0.);
-		SetMaterial( 1., 1., 1., 1. );
-		//glDisable( GL_LIGHTING );
+		
+
+		SetSpotLight( GL_LIGHT1, 10 * cos(2 * (Time) * M_PI), 5., 0., 0., 0., 0., 1, SunG, SunB );
+		glTranslatef(10 * cos(2 * (Time) * M_PI), 5 + cos(2 * Time * M_PI), 0.);
+		SetMaterial( 0.980, 0.980, 0.824, 1. );
 		glCallList( SphereList );
 	glPopMatrix();
 
-	//testing draw a ground
-	/*glPushMatrix();
-		glEnable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
-		MjbSphere( SPHERE_RADIUS, SPHERE_SLICES, SPHERE_STACKS );
-	glPopMatrix();*/
-
 	//draw the ground:
 	glPushMatrix();
-		//glTranslatef( 0., 5., 0. );
 		glEnable(GL_LIGHTING);
 		glDisable(GL_TEXTURE_2D);
-		//glColor3f( 0.133, 0.545, 0.133 );
+		//draw some grass
+		glScalef(0.5, 0.5, 0.5);
+		glColor3f( 0.133, 0.545, 0.133 );
+		SetMaterial(0.133, 0.545, 0.133, 1);
+		glCallList( Grass );
+		
+		//draw the dirt
+		glColor3f(0.545, 0.271, 0.075);
+		SetMaterial(0.545, 0.271, 0.075, 1);
 		glCallList( BoxList );
 	glPopMatrix();
 
-	//glEnable(GL_LIGHTING);
-
-	//glDisable( GL_LIGHTING );
-
-	//Draw the SkyBox
-	//glEnable( GL_TEXTURE_2D );
-
+	//draw the "skybox"
 	glPushMatrix();
+		glDisable(GL_LIGHTING);
 		SetMaterial( 1., 1., 1., 1. );
-		glColor3f(1., (cos((Time * 0.5) * M_PI)) + 0.75, (cos((Time * 0.75) * M_PI)) + 0.420);
+		glColor3f(1., SunG, SunB);
 		glCallList( Face1 );			//+z
 		glCallList( Face2 );			//-z
 		glCallList( Face3 );			//+x
@@ -508,12 +526,57 @@ Display( )
 		//glDisable( GL_TEXTURE_2D );
 	glPopMatrix();
 
+	//Draw some fireflies:
+	int GL_LIGHTS[10];
+	srand(time(NULL));
+	flag = true;
+	for(int i=0; i<10; i++){
+    	x = rand()%5+1;
+    	z = rand()%5+1;
+    	if (flag){
+    		x = x * -1;
+    		z = z * -1;
+    	}
+    	flag = !flag;
+		Pattern->Use();
+		A = 1.;
+		B = 1.;
+		C = 1.;
+		D = 1.;
+		if( true )
+		{
+		//A = << some function of Time >>
+		//B = << some function of Time >>
+			A = sin(Time * M_PI);
+			B = (Time * Time) + Time;
+			Pattern->SetUniformVariable( "uA", A );
+			Pattern->SetUniformVariable( "uB", B );
+		//Pattern->SetUniformVariable( "uTime",  Time );
+		}
+
+		if( true )
+		{
+			D = cos(Time * M_PI);
+			Pattern->SetUniformVariable( "uC", C );
+			Pattern->SetUniformVariable( "uD", D );
+		//Pattern->SetUniformVariable( "uTime",  Time );
+		}
+		glTranslatef((float)x, 0., (float)z);
+		glScalef(0.25, 0.25, 0.25);
+		SetPointLight( GL_LIGHTS[i], (float)x, 0., (float)z, 1., cos(D), 0. );
+		glCallList( SphereList );
+	//glutSolidCone(1.,  1.,  10.,  10.);
+		Pattern->Use( 0 );
+	}
+
+
+
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
 	glDisable( GL_DEPTH_TEST );
 	//glColor3f( 0., 1., 1. );
-	DoRasterString( 0., 1., 0., "Text That Moves" );
+	//DoRasterString( 0., 1., 0., "CS450 Fall 2017 Final Project" );
 
 
 	// draw some gratuitous text that is fixed on the screen:
@@ -533,7 +596,7 @@ Display( )
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity( );
 	glColor3f( 1., 1., 1. );
-	DoRasterString( 5., 5., 0., "Text That Doesn't" );
+	DoRasterString( 5., 5., 0., "Nick Wong" );
 
 
 	// swap the double-buffered framebuffers:
@@ -802,6 +865,19 @@ InitGraphics( )
 	fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
+	Pattern = new GLSLProgram( );
+	bool valid = Pattern->Create( "pattern.vert",  "pattern.frag" );
+	if( ! valid )
+	{
+		fprintf( stderr, "Shader cannot be created!\n" );
+		DoMainMenu( QUIT );
+	}
+	else
+	{
+		fprintf( stderr, "Shader created.\n" );
+	}
+	Pattern->SetVerbose( false );
+
 }
 
 void
@@ -837,14 +913,26 @@ InitLists( )
 	border = 0;	//width of texture border, in pixels
 
 
+	//load in some grass obj for use with terrain:
+	Grass = glGenLists( 1 );
+	glNewList( Grass, GL_COMPILE );
+	LoadObjFile( "src/grass/Grass_02.obj" );
+	glEndList( );
 
-	unsigned char *suntex = BmpToTexture("Sun.bmp", &texWidth[0], &texHeight[0]);
+	//load in OBJ file for the terrain:
+	/*Terrain = glGenLists( 1 );
+	glNewList( Terrain, GL_COMPILE );
+	LoadObjFile( "src/SnowTerrain/SnowTerrain.obj" );
+	glEndList( );*/
+
+
+	unsigned char *suntex = BmpToTexture("src/Sun.bmp", &texWidth[0], &texHeight[0]);
 
 	//SphereList for "Sun"
 	//Draw Sphere (spotlight sphere)
 	SphereList = glGenLists( 1 );
 	glNewList( SphereList, GL_COMPILE );
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 	setupTextures();
 	//downloading texture and making it current texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -856,12 +944,12 @@ InitLists( )
 	//Read in Texture
 	//texture src:
 	//https://www.turbosquid.com/FullPreview/Index.cfm/ID/348109
-	unsigned char *tex1 = BmpToTexture("skybox/skyrender0001.bmp", &texWidth[0], &texHeight[0]);
-	unsigned char *tex2 = BmpToTexture("skybox/skyrender0004.bmp", &texWidth[1], &texHeight[1]);
-	unsigned char *tex3 = BmpToTexture("skybox/skyrender0002.bmp", &texWidth[2], &texHeight[2]);
-	unsigned char *tex4 = BmpToTexture("skybox/skyrender0005.bmp", &texWidth[3], &texHeight[3]);
-	unsigned char *tex5 = BmpToTexture("skybox/skyrender0003.bmp", &texWidth[4], &texHeight[4]);
-	unsigned char *tex6 = BmpToTexture("skybox/skyrender0006.bmp", &texWidth[5], &texHeight[5]);
+	unsigned char *tex1 = BmpToTexture("src/skybox/skyrender0001.bmp", &texWidth[0], &texHeight[0]);
+	unsigned char *tex2 = BmpToTexture("src/skybox/skyrender0004.bmp", &texWidth[1], &texHeight[1]);
+	unsigned char *tex3 = BmpToTexture("src/skybox/skyrender0002.bmp", &texWidth[2], &texHeight[2]);
+	unsigned char *tex4 = BmpToTexture("src/skybox/skyrender0005.bmp", &texWidth[3], &texHeight[3]);
+	unsigned char *tex5 = BmpToTexture("src/skybox/skyrender0003.bmp", &texWidth[4], &texHeight[4]);
+	unsigned char *tex6 = BmpToTexture("src/skybox/skyrender0006.bmp", &texWidth[5], &texHeight[5]);
 
 	float dx = BOXSIZE / 2.f;
 	float dy = BOXSIZE / 2.f;
@@ -873,7 +961,7 @@ InitLists( )
 	Face1 = glGenLists( 1 );
 	glNewList( Face1, GL_COMPILE );
 
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex1 );
 	glEnable( GL_TEXTURE_2D );
@@ -905,7 +993,7 @@ InitLists( )
 
 	Face2 = glGenLists( 1 );
 	glNewList( Face2, GL_COMPILE );
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex2 );
 	glEnable( GL_TEXTURE_2D );
@@ -935,7 +1023,7 @@ InitLists( )
 
 	Face3 = glGenLists( 1 );
 	glNewList( Face3, GL_COMPILE );
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex3 );
 	glEnable( GL_TEXTURE_2D );
@@ -966,7 +1054,7 @@ InitLists( )
 
 	Face4 = glGenLists( 1 );
 	glNewList( Face4, GL_COMPILE );
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex4 );
 	glEnable( GL_TEXTURE_2D );
@@ -996,7 +1084,7 @@ InitLists( )
 
 	Face5 = glGenLists( 1 );
 	glNewList( Face5, GL_COMPILE );
-	glDisable( GL_LIGHTING );
+	//glDisable( GL_LIGHTING );
 
 	glActiveTexture( *tex5 );
 	glEnable( GL_TEXTURE_2D );
